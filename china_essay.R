@@ -1,8 +1,66 @@
+# Code for producing plots and statistics used in China long development 
+# review essay. 
+
+# Contents:
+#  0. Set up environment
+#  1. Long run share of global gdp figure 
+#  2. 
+#  3. 
+
+##################################################################
+# 0. Set up environment
+##################################################################
+
 library(tidyverse)
 library(readxl)
 
 theme_set(theme_bw())
-dir = "/Users/tombearpark/Documents/princeton/1st_year/POL523/essays/data/"
+base = "/Users/tombearpark/Documents/princeton/1st_year/POL523/essays/"
+dir = paste0(base, "data/")
+output = paste0(base, "figs/")
+
+
+##################################################################
+# 1. Chinese share of global GDP in the very long run
+##################################################################
+
+# Include a 2019 value: 
+# https://data.worldbank.org/?locations=CN-1W-EU-US
+
+chn_ratio = 14.3 / 87.6
+eu_ratio= 15.6 / 87.6
+us_ratio = 21.4 / 87.6
+lr_gdp_share = read_xlsx(paste0(dir, 
+                                "long_run_china_share_global_gdp.xlsx")) %>% 
+  filter(Country %in% c("China", "Europe", "US"))
+
+lr_gdp_share$`2019` = c(chn_ratio, eu_ratio, us_ratio)
+
+lr_gdp_share = lr_gdp_share%>% 
+  mutate(`2019` = 100* `2019`) %>% 
+  pivot_longer(!Country, names_to = "year", 
+                                     values_to = "percent_global_gdp") %>% 
+  mutate(year = as.numeric(year)) 
+
+ggplot(lr_gdp_share) + 
+  geom_line(aes(x = year, y = percent_global_gdp, color = Country)) +
+  xlab("") + ylab("Percent of Global GDP") +
+  labs(title = "Long run global GDP Shares", 
+       caption = "Source: Maddison estimates and calculations from WB data")
+ggsave(paste0(output, "LR_shares_global_GDP.png"))
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # 1. Plot GDP PC 
 
@@ -26,26 +84,10 @@ df_CHN = get_wb_data("API_NY.GDP.PCAP.CD_DS2_en_csv_v2_1495171", "GDP_PC") %>%
   filter(country_name %in% c("World", "China"))
 
 ggplot(data = df_CHN) + 
-  geom_line(aes(x = year, y = GDP_PC, color = country_name))
+  geom_line(aes(x = year, y = GDP_PC, color = country_name)) 
 
 
-# 2. Chinese share of global GDP
 
-# Include a 2019 value: 
-# https://data.worldbank.org/?locations=CN-1W
-ratio_2019 = 14.3 / 87.6
-
-lr_gdp_share = read_xlsx(paste0(dir, 
-                                "long_run_china_share_global_gdp.xlsx")) %>% 
-  filter(Country == "China") %>% 
-  mutate(`2019` = 100* ratio_2019) 
-
-df_1 = lr_gdp_share %>% pivot_longer(!Country, names_to = "year", 
-                      values_to = "percent_global_gdp") %>% 
-  mutate(year = as.numeric(year)) 
-
-ggplot(df_1) + 
-  geom_point(aes(x = year, y = percent_global_gdp))
   
 # 3. GDP growth
 
@@ -60,7 +102,8 @@ df_CHN$GDP_PC_GROWTH[df_CHN$year > 1990 & df_CHN$country_name == "World"] %>%
   mean(na.rm = TRUE)
 
 ggplot(data = df_CHN) +
-  geom_line(aes(x = year, y = GDP_PC_GROWTH, color = country_name))
+  geom_line(aes(x = year, y = GDP_PC_GROWTH, color = country_name)) +
+  xlab("")
 
 
 
