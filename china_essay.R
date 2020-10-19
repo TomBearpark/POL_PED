@@ -52,17 +52,9 @@ ggsave(paste0(output, "LR_shares_global_GDP.png"))
 
 
 
-
-
-
-
-
-
-
-
-
-
+##################################################################
 # 2. Growth under Mao
+##################################################################
 
 get_wb_data = function(string, ind_name){
   
@@ -95,7 +87,12 @@ plot_df_mao = bind_rows(
 
 ggplot(data = plot_df_mao) + 
   geom_line(aes(x = year, y = value, color = region)) +
-  facet_wrap(.~var, scales = "free")
+  facet_wrap(.~var, scales = "free") + xlab("") + ylab("") +
+  labs(title = "Growth Under Mao", 
+       caption = "Source: WB data")
+ggsave(paste0(output, "growth_mao.png"))
+
+
 
 
   
