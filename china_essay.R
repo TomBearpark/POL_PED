@@ -18,7 +18,7 @@ theme_set(theme_bw())
 base = "/Users/tombearpark/Documents/princeton/1st_year/POL523/essays/"
 dir = paste0(base, "data/")
 output = paste0(base, "figs/")
-
+sup = suppressWarnings
 
 ##################################################################
 # 1. Chinese share of global GDP in the very long run
@@ -62,7 +62,7 @@ ggsave(paste0(output, "LR_shares_global_GDP.png"))
 
 
 
-# 1. Plot GDP PC 
+# 2. Growth under Mao
 
 get_wb_data = function(string, ind_name){
   
@@ -75,25 +75,33 @@ get_wb_data = function(string, ind_name){
     select(-c(`Country Code`,	`Indicator Name`,	`Indicator Code`, X66)) %>%
     pivot_longer(!`Country Name`, names_to = "year", values_to = ind_name) %>%
     mutate(year = as.numeric(year)) %>% 
-    rename(country_name = `Country Name`)
+    rename(region = `Country Name`)
   
   return(df)
 }
 
-df_CHN = get_wb_data("API_NY.GDP.PCAP.CD_DS2_en_csv_v2_1495171", "GDP_PC") %>% 
-  filter(country_name %in% c("World", "China"))
+df_PC = sup(get_wb_data("API_NY.GDP.PCAP.CD_DS2_en_csv_v2_1495171", "GDP_PC")) %>% 
+  filter(region %in% c("World", "China"))
 
-ggplot(data = df_CHN) + 
-  geom_line(aes(x = year, y = GDP_PC, color = country_name)) 
+df_growth = sup(get_wb_data("API_NY.GDP.PCAP.KD.ZG_DS2_en_csv_v2_1495281", 
+                     "GDP_PC_GROWTH")) %>% 
+  filter(region %in% c("World", "China"))
 
+plot_df_mao = bind_rows(
+  df_PC %>% mutate(var = "GDP_PC") %>% rename(value = GDP_PC), 
+  df_growth %>% mutate(var = "GDP_PC_growth") %>% rename(value = GDP_PC_GROWTH)        
+  ) %>% filter(year < 1979)
+
+
+ggplot(data = plot_df_mao) + 
+  geom_line(aes(x = year, y = value, color = region)) +
+  facet_wrap(.~var, scales = "free")
 
 
   
 # 3. GDP growth
 
-df_CHN = get_wb_data("API_NY.GDP.PCAP.KD.ZG_DS2_en_csv_v2_1495281", 
-                     "GDP_PC_GROWTH") %>% 
-  filter(country_name %in% c("World", "China"))
+
 
 df_CHN$GDP_PC_GROWTH[df_CHN$year > 1990 & df_CHN$country_name == "China"] %>% 
   mean(na.rm = TRUE)
@@ -103,7 +111,7 @@ df_CHN$GDP_PC_GROWTH[df_CHN$year > 1990 & df_CHN$country_name == "World"] %>%
 
 ggplot(data = df_CHN) +
   geom_line(aes(x = year, y = GDP_PC_GROWTH, color = country_name)) +
-  xlab("")
+  xlab("") + geom_hline(yintercept =0)
 
 
 
