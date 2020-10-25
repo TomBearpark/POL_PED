@@ -78,10 +78,18 @@ df_PC = df_PC %>%
 
 df_growth = sup(get_wb_data("API_NY.GDP.PCAP.KD.ZG_DS2_en_csv_v2_1495281", 
                      "GDP_PC_GROWTH")) 
-# calcualte variance 
+
+# calcualte variance - find and print the high variance outliers
 df_growth %>% filter(year <1979) %>% group_by(Region) %>% 
   summarise(sd = sd(GDP_PC_GROWTH, na.rm  =TRUE)) %>% 
   filter(sd>10)
+
+# Calculate average growth by time period - for a statistic
+df_growth %>% 
+  mutate(period = 1*(year < 1979)) %>% 
+  filter(Region == "China") %>% 
+  group_by(period) %>% 
+  summarise(mean = mean(GDP_PC_GROWTH, na.rm = TRUE))
 
 df_growth = df_growth %>% 
   filter(Region %in% c("World", "China")) 
