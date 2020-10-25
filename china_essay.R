@@ -10,6 +10,7 @@
 ##################################################################
 # 0. Set up environment
 ##################################################################
+rm(list = ls())
 
 library(tidyverse)
 library(readxl)
@@ -26,10 +27,11 @@ sup = suppressWarnings
 
 # Include a 2019 value: 
 # https://data.worldbank.org/?locations=CN-1W-EU-US
+world_gdp = 87.6
+chn_ratio = 14.3 / world_gdp
+eu_ratio= 15.6 / world_gdp
+us_ratio = 21.4 / world_gdp
 
-chn_ratio = 14.3 / 87.6
-eu_ratio= 15.6 / 87.6
-us_ratio = 21.4 / 87.6
 lr_gdp_share = read_xlsx(paste0(dir, 
                                 "long_run_china_share_global_gdp.xlsx")) %>% 
   filter(Country %in% c("China", "Europe", "US"))
@@ -67,11 +69,21 @@ get_wb_data = function(string, ind_name){
   return(df)
 }
 
-df_PC = sup(get_wb_data("API_NY.GDP.PCAP.CD_DS2_en_csv_v2_1495171", "GDP_PC")) %>% 
+df_PC = sup(get_wb_data("API_NY.GDP.PCAP.CD_DS2_en_csv_v2_1495171", 
+                        "GDP_PC")) 
+
+
+df_PC = df_PC %>% 
   filter(Region %in% c("World", "China"))
 
 df_growth = sup(get_wb_data("API_NY.GDP.PCAP.KD.ZG_DS2_en_csv_v2_1495281", 
-                     "GDP_PC_GROWTH")) %>% 
+                     "GDP_PC_GROWTH")) 
+# calcualte variance 
+df_growth %>% filter(year <1979) %>% group_by(Region) %>% 
+  summarise(sd = sd(GDP_PC_GROWTH, na.rm  =TRUE)) %>% 
+  filter(sd>10)
+
+df_growth = df_growth %>% 
   filter(Region %in% c("World", "China")) 
 
 plot_df = bind_rows(
