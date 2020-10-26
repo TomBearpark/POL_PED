@@ -120,6 +120,21 @@ ggplot(data = plot_df %>% filter(year >= 1979) ) +
 ggsave(paste0(output, "growth_modern.png"), height = 5, width = 8)
 
 
+##################################################################
+# 4. Exports
+##################################################################
+df_ex = sup(get_wb_data("API_NE.EXP.GNFS.ZS_DS2_en_csv_v2_1498708", 
+                        "Exports_percent_GDP")) 
+
+df_ex %>% filter(Region %in% c("China", "India", "Brazil", "Japan", "World")) %>% 
+  ggplot() +
+  geom_line(aes(x = year, y = Exports_percent_GDP, color= Region))
+
+
+
+
+
+
 
 
 
